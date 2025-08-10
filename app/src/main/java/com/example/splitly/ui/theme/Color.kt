@@ -2,6 +2,13 @@ package com.example.splitly.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val md_theme_dark_primary = Color(0xFF1EB980)
-val md_theme_dark_onPrimary = Color(0xFF000000)
-val md_theme_dark_background = Color(0xFF121212)
+// Palette provided
+val BlizzardBlue = Color(0xFF08D9D6)
+val Gunmetal = Color(0xFF252A34)
+val RadicalRed = Color(0xFFFF2E63)
+val Platinum = Color(0xFFEAEAEA)
+
+val md_theme_dark_primary = RadicalRed
+val md_theme_dark_onPrimary = Gunmetal
+val md_theme_dark_background = Gunmetal
+val md_theme_dark_tertiary = Platinum
