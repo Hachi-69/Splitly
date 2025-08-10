@@ -1,11 +1,14 @@
 package com.example.splitly.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -20,13 +23,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.splitly.ExpenseViewModel
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.ChevronRight
-import com.example.splitly.ui.theme.BlizzardBlue
+import com.example.splitly.R
 
 
 @Composable
@@ -35,8 +39,13 @@ fun HomeScreen(vm: ExpenseViewModel) {
 
     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Surface(modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
-                Icon(imageVector = Icons.Default.AttachMoney, contentDescription = "money", tint = BlizzardBlue, modifier = Modifier.padding(12.dp))
+            Surface(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo4), // Sostituisci con la tua immagine
+                    contentDescription = "money",
+                    contentScale = ContentScale.Crop, // Scala l'immagine per riempire lo spazio
+                    modifier = Modifier.fillMaxSize() // L'immagine riempie la Surface
+                )
             }
             Column {
                 Text(text = "Splitly", style = MaterialTheme.typography.headlineSmall)
@@ -50,7 +59,8 @@ fun HomeScreen(vm: ExpenseViewModel) {
                     value = temp.value,
                     onValueChange = { new -> temp.value = new.filter { it.isDigit() } },
                     label = { Text("Number of people") },
-                    singleLine = true
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {

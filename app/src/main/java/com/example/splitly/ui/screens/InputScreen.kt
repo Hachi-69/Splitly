@@ -33,6 +33,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.ChevronLeft
 import com.example.splitly.ui.theme.BlizzardBlue
 
 
@@ -50,13 +52,15 @@ fun InputScreen(vm: ExpenseViewModel) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.SpaceBetween // Modificato per allineare il bottone "Back" a sinistra
         ) {
             Button(onClick = { vm.backToHome() }) {
+                Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "start")
                 Text("Back")
             }
             Button(onClick = { vm.calculateAndShowResult() }, modifier = Modifier.padding(start = 12.dp)) {
-                Text("Calculate")
+                Text("Calculate ")
+                Icon(imageVector = Icons.Default.Calculate, contentDescription = "Calculate", modifier = Modifier.padding(end = 4.dp))
             }
         }
     }
