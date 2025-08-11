@@ -1,20 +1,65 @@
-Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International  
-(CC BY-NC-ND 4.0)
+LICENSE FOR THE PROJECT «Splitly» — (Custom License by Luca Turillo)
+Copyright © 2025 Luca Turillo
+All rights reserved.
 
-By exercising the Licensed Rights (defined below), You accept and agree to be bound by the terms and conditions of this Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International Public License ("Public License").  
-To the extent this Public License may be interpreted as a contract, You are granted the Licensed Rights in consideration of Your acceptance of these terms and conditions, and the Licensor grants You such rights in consideration of benefits the Licensor receives from making the Licensed Material available under these terms and conditions.
+1. Definitions
+Work: the software, source code, content, resources, and any material distributed under this license.
 
-You are free to:
-- Share — copy and redistribute the material in any medium or format
+Licensor: Luca Turillo, the copyright owner.
 
-Under the following terms:
-- Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made.  
-  You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
-- NonCommercial — You may not use the material for commercial purposes.
-- NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material.
+Licensee: any person or entity that receives or uses the Work.
 
-No additional restrictions — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
+Commercial Use: any use of the Work intended to obtain a direct or indirect economic advantage, including but not limited to selling the Work, licensing it to third parties for payment, incorporating it into paid products or services, monetizing it, or using it in a commercial offering.
 
-Full License Text: https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode
+2. Grant of Rights
+Subject to the terms and conditions of this license, the Licensor grants the Licensee a non-exclusive, worldwide, revocable license to:
 
-© Luca Turillo 2025
+Use the Work for personal, educational, and experimental purposes;
+
+Copy and modify the Work for non-commercial purposes;
+
+Distribute copies and modified versions of the Work solely for non-commercial purposes, provided the conditions in Section 3 (Attribution and Notices) are met.
+
+3. Mandatory Conditions
+Any distribution, publication, public display, or derivative work (including making the Work available online) must comply with the following:
+a) Attribution: The original author must be clearly credited. At minimum include the following wording where feasible:
+"Splitly — © 2025 Luca Turillo. Used under license."
+Where possible, also include a link to the original source or project page. Attribution must appear in the README, credits page, or an equivalent location visible to the end user.
+b) License Notice: A copy of this license (or a link to it) must be included with the Work or any derivative work.
+c) No Removal of Credits: Original credits and copyright notices must not be removed, hidden, or obscured.
+
+4. Commercial Use
+Commercial Use of the Work is expressly prohibited except where:
+
+the Licensee obtains prior written authorization from the Licensor, and
+
+the Licensee agrees to the Licensor’s terms regarding compensation (fees, royalties, or other consideration), in writing.
+
+Any Commercial Use without such prior written authorization and agreed compensation constitutes copyright infringement and will result in immediate revocation of the rights granted by this license.
+
+5. No Sublicensing
+The Licensee may not grant sublicenses that alter or waive the terms of this license. Any sublicense or agreement that permits Commercial Use contrary to Section 4 is void.
+
+6. Additional Restrictions
+Unless expressly authorized in writing by the Licensor, the Licensee shall not:
+
+Sell the Work as a standalone product;
+
+Remove, alter, or obscure copyright or attribution notices;
+
+Use the Work in a manner that violates third-party rights or applicable law.
+
+7. Warranty Disclaimer and Limitation of Liability
+The Work is provided "AS IS", without warranties of any kind, express or implied. To the fullest extent permitted by applicable law, the Licensor is not liable for any damages (direct, indirect, incidental, consequential, or otherwise) arising out of the use or inability to use the Work.
+
+8. Termination for Breach
+Material breach of any term of this license results in automatic termination of the rights granted herein. Termination does not limit the Licensor’s right to seek legal remedies, including injunctive relief and damages.
+
+9. Governing Law and Jurisdiction
+This license is governed by the laws of the Republic of Italy. Disputes relating to this license shall be resolved in the courts of Arezzo, subject to mandatory legal provisions.
+
+10. Contact for Commercial Authorizations
+To request authorization for Commercial Use, contact:
+Luca Turillo
+turilloluca2005@gmail.com
+Please provide: a description of intended use, business model if any, parties involved, and any proposed compensation or license terms.
