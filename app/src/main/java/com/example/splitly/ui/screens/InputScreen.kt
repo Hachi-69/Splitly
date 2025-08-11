@@ -1,11 +1,15 @@
 package com.example.splitly.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,13 +39,32 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material3.Surface
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.splitly.R
 import com.example.splitly.ui.theme.BlizzardBlue
 
 
 @Composable
 fun InputScreen(vm: ExpenseViewModel) {
     Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Enter names and amounts (es. 62.1)", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.size(20.dp))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Surface(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo4), // Sostituisci con la tua immagine
+                    contentDescription = "money",
+                    contentScale = ContentScale.Crop, // Scala l'immagine per riempire lo spazio
+                    modifier = Modifier.fillMaxSize() // L'immagine riempie la Surface
+                )
+            }
+            Column {
+                Text(text = "Splitly", style = MaterialTheme.typography.headlineSmall)
+            }
+        }
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp)) // Added Spacer for vertical space
+        Text(text = "Enter names and amounts (es. 62.1)", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
 
         LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
             items(vm.persons) { person ->

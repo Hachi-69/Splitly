@@ -1,8 +1,11 @@
 package com.example.splitly.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material3.Button
@@ -10,13 +13,19 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.splitly.data.Transaction
 import com.example.splitly.ExpenseViewModel
+import com.example.splitly.R
 import com.example.splitly.ui.utils.centsToDisplay
 import com.example.splitly.ui.theme.BlizzardBlue
 
@@ -30,6 +39,20 @@ fun ResultScreen(vm: ExpenseViewModel) {
         .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        Spacer(modifier = Modifier.size(10.dp))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Surface(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo4), // Sostituisci con la tua immagine
+                    contentDescription = "money",
+                    contentScale = ContentScale.Crop, // Scala l'immagine per riempire lo spazio
+                    modifier = Modifier.fillMaxSize() // L'immagine riempie la Surface
+                )
+            }
+            Column {
+                Text(text = "Splitly", style = MaterialTheme.typography.headlineSmall)
+            }
+        }
         // Header: title + total spent
         Text(
             text = "All balanced 🎉",
