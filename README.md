@@ -1,275 +1,293 @@
-Licensed under CC BY-NC-ND 4.0 — © Luca Turillo 2025
+# Splitly — Expense splitting app (Android, Jetpack Compose)
 
-# Splitly
-
-**Splitly** — Android app to split group expenses quickly and fairly. This repository contains a Kotlin + Jetpack Compose (Material 3) implementation that computes minimal transactions to settle debts between N participants. The UI is optimized for a dark, playful look but the codebase and architecture are production-oriented and easy to extend.
+A compact, dependency-light Android app written in Kotlin + Jetpack Compose that helps a group of people split expenses and computes the minimal set of payments required to settle balances.
+This README documents the project structure, core algorithm, how to build/run the app, example usage, limitations, and the license (Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International).
 
 ---
 
-## Table of Contents
+## Table of contents
 
-* [Project Overview](#project-overview)
-* [Features](#features)
-* [Tech Stack](#tech-stack)
-* [Architecture & Design](#architecture--design)
-* [Project Structure](#project-structure)
-* [Getting Started](#getting-started)
-
-  * [Prerequisites](#prerequisites)
-  * [Clone & Open](#clone--open)
-  * [Build & Run](#build--run)
-* [Usage](#usage)
-* [Data Model & Algorithm](#data-model--algorithm)
-* [UI & Theming Notes](#ui--theming-notes)
-* [Assets & Licensing](#assets--licensing)
-* [Testing](#testing)
-* [Contributing](#contributing)
-* [Security & Privacy Notes](#security--privacy-notes)
-* [Release / Play Store Checklist](#release--play-store-checklist)
-* [Troubleshooting](#troubleshooting)
-* [Contact](#contact)
+* [Project overview](#project-overview)
+* [Why Splitly?](#why-splitly)
+* [Highlights & key features](#highlights--key-features)
+* [Project structure](#project-structure-important-files)
+* [Core algorithm (debt settlement)](#core-algorithm-debt-settlement)
+* [Public API (important classes & functions )](#public-api-important-classes--functions)
+* [Build & run](#build--run)
+* [Usage / UX flow](#usage--ux-flow)
+* [Examples](#examples)
+* [Limitations & notes](#limitations--notes)
+* [Contributing & license considerations](#contributing--license-considerations)
 * [License](#license)
 
 ---
 
-## Project Overview
+## Project overview
 
-Splitly is a compact Android application that helps groups of people divide shared expenses. Users enter the number of participants, each person’s spent amount, and Splitly calculates who owes whom and suggests a minimal set of transactions to settle the debt.
+Splitly is a small Android application that:
 
-The implementation emphasizes correctness (currency handling in cents), simplicity of UI using Jetpack Compose with Material 3, and an MVVM-inspired separation of concerns.
+* Lets users specify a number of people, enter each person’s name and how much they paid (amounts are entered in euros but handled internally as **cents**).
+* Computes who owes whom using a greedy settlement algorithm and displays the list of transactions to balance expenses.
+* Uses Jetpack Compose for the UI and a simple `ViewModel`-based state management.
 
----
-
-## Features
-
-* Specify arbitrary number of participants
-* Enter names and amounts (currency-aware internal representation in cents)
-* Greedy algorithm to compute a compact set of settlement transactions
-* Dark-first playful UI with cards, icons and lighthearted copy
-* Local state management via `ViewModel` + Compose `mutableStateOf`
-* Modular codebase easy to extend (algorithm separate from UI)
+The app aims to be straightforward, robust to floating-point issues (stores money as `Long` cents), and easy to inspect and extend.
 
 ---
 
-## Tech Stack
+## Why Splitly?
 
-* Kotlin (JVM)
-* Android SDK (minSdk 28, targetSdk 36 in the current code)
-* Jetpack Compose (Material 3)
-* AndroidX Lifecycle / ViewModel
-* Gradle Kotlin DSL (`build.gradle.kts`)
-
----
-
-## Architecture & Design
-
-The project follows a simple, pragmatic separation:
-
-* **UI**: Jetpack Compose screens and composables (package `com.example.splitly.ui` and `ui.screens`).
-* **ViewModel**: `ExpenseViewModel` (package root) holds UI state (screen, list of persons, transactions) and orchestrates operations.
-* **Domain**: `calculateTransactions` (package `domain`) contains pure logic to compute settlements — fully unit-testable.
-* **Data**: `Person` and `Transaction` models (package `data`).
-
-This separation makes it easy to replace the storage layer, add persistence (Room / DataStore), or expose the domain logic as a library.
+While many expense-splitting apps exist, Splitly focuses on:
+*   **Simplicity and Speed:** Get to the settlement transactions with minimal fuss.
+*   **Offline First:** Operates entirely locally without requiring accounts or internet connectivity.
+*   **Transparency:** The algorithm used is straightforward, ensuring users can understand how debts are settled.
+*   **Modern Android Development Showcase:** Utilizes the latest Android Jetpack libraries and best practices, making it a good learning resource.
 
 ---
 
-## Project Structure
+## Highlights & key features
+
+* Monetary values are represented internally in **cents** (`Long`) to avoid floating point rounding issues.
+* Greedy debt-settling algorithm (`calculateTransactions`) that:
+
+  * computes per-person quota (evenly split) and distributes leftover cents deterministically,
+  * separates creditors and debtors and settles amounts by pairwise transfers.
+* Clean Compose screens with `Home`, `Input`, and `Result` flows, animated transitions, and simple Material theming.
+* Minimal dependencies: Kotlin, AndroidX / Jetpack Compose, `ViewModel`.
+
+---
+
+## Project structure (important files)
 
 ```
-app/
- └─ src/main/java/com/example/splitly/
-    ├─ MainActivity.kt
-    ├─ ExpenseViewModel.kt
-    ├─ data/
-    │  ├─ Person.kt
-    │  └─ Transaction.kt
-    ├─ domain/
-    │  └─ Calculator.kt
-    ├─ ui/
-    │  ├─ ExpenseApp.kt
-    │  ├─ ui.screens/
-    │  │  ├─ HomeScreen.kt
-    │  │  ├─ InputScreen.kt
-    │  │  └─ ResultScreen.kt
-    │  ├─ theme/
-    │  │  ├─ Color.kt
-    │  │  ├─ Type.kt
-    │  │  └─ Theme.kt
-    │  └─ utils/
-    │     └─ FormatUtils.kt
-    └─ res/
-       └─ drawable/ (vector assets, mascots, stickers)
+com.example.splitly
+├─ MainActivity.kt            // app entry: sets Compose content
+├─ Screen.kt                 // Screen sealed class
+├─ ExpenseViewModel.kt       // ViewModel and app state
+├─ domain/
+│   └─ calculateTransactions // debt-settling algorithm
+├─ data/
+│   ├─ Person.kt
+│   └─ Transaction.kt
+├─ ui/
+│   ├─ ExpenseApp.kt          // root composable + AnimatedContent
+│   ├─ screens/
+│   │   ├─ HomeScreen.kt
+│   │   ├─ InputScreen.kt
+│   │   └─ ResultScreen.kt
+│   ├─ utils/
+│   │   ├─ parseAmountInput.kt // parsing + formatting helpers
+│   │   └─ centsToDisplay.kt
+│   └─ theme/
+│       ├─ Colors.kt
+│       ├─ Theme.kt
+│       └─ Typography.kt
 ```
 
 ---
 
-## Getting Started
-
-### Prerequisites
-
-* Android Studio (Arctic Fox or later recommended; use latest stable for best Compose support)
-* JDK 11
-* Android SDK with an emulator or a physical Android device (minSdk 28 in the current configuration)
-
-### Clone & Open
-
-```bash
-git clone https://github.com/<your-username>/splitly.git
-cd splitly
-# Open the folder in Android Studio (File -> Open)
-```
-
-If you maintain a different package id locally (for example `com.example.splitly`), ensure your AndroidManifest and Gradle `namespace` match the package structure.
-
-### Build & Run
-
-* In Android Studio: **Build → Clean Project**, then **Build → Rebuild Project**. Fix any missing imports suggested by the IDE.
-* Run on emulator: create an Android Virtual Device (AVD) and press the green **Run** button.
-
-Command-line (Gradle wrapper):
-
-```bash
-./gradlew assembleDebug
-./gradlew installDebug
-```
-
----
-
-## Usage
-
-High-level flow of the app:
-
-1. **Home** — set number of people and press Start.
-2. **Input** — provide a name (optional) and an amount for each participant (amounts are parsed and stored as cents internally).
-3. **Calculate** — app computes the fair share and displays the list of transactions required to settle debts.
-4. **Result** — review suggested transfers and optionally return to input.
-
-The UI uses an MVVM pattern; all actions are dispatched from the `ExpenseViewModel`.
-
----
-
-## Data Model & Algorithm
-
-### Data models
-
-* `Person(id: Int, name: String, amountCents: Long)` — amounts in cents to avoid floating point rounding.
-* `Transaction(fromId: Int, toId: Int, amountCents: Long)` — represents a single payment from one participant to another.
-
-### Calculation algorithm
+## Core algorithm (debt settlement)
 
 `calculateTransactions(persons: List<Person>): List<Transaction>`
 
-The implementation uses a deterministic greedy algorithm:
+High-level summary:
 
-1. Compute `total = sum(amountCents)`.
-2. Compute `baseQuota = total / N` and distribute the remainder cents to the first `remainder` participants to maintain integer arithmetic correctness.
-3. Build creditor (positive balance) and debtor (negative balance) lists.
-4. Iteratively match largest creditor vs largest debtor, transferring `min(credit, debt)` until balances zero.
+1. Convert all person amounts to cents (already stored as `Long` cents).
+2. Compute the total paid across everyone.
+3. Compute the integer base quota per person: `baseQuota = total / n`.
+4. Distribute the integer remainder (`total % n`) deterministically to the first `remainder` people (one extra cent each). This ensures quotas sum exactly to `total`.
+5. For each person compute: `balance = paid - quota`.
 
-This algorithm is O(N log N) due to sorting and produces a compact set of transactions that is usually minimal for practical inputs.
+   * `balance > 0` → the person should **receive** money (creditor).
+   * `balance < 0` → the person must **pay** money (debtor).
+6. Sort creditors in descending order of balance and debtors in ascending order (most negative first).
+7. Walk creditors and debtors with two indexes and create transactions where each transaction transfers `min(creditorBalance, -debtorBalance)`.
+8. Continue until all balances reach zero (or no further matches possible).
 
----
+Complexity: dominated by sorting creditors/debtors → roughly `O(n log n)` where `n` is number of persons.
 
-## UI & Theming Notes
+Design choices / guarantees:
 
-* **Material 3** is used. The `SplitlyTheme` in `ui.theme.Theme.kt` forces a dark color scheme as the default UI.
-* Typography is defined in `Type.kt` and color tokens in `Color.kt`.
-* Icons use Material icons; if you add extra icons, ensure you include the `material-icons-extended` dependency or use vector drawables in `res/drawable`.
-* The UI emphasizes cards, rounded corners and playful copy; the theme is dark-by-default but can be extended with a toggle.
-
----
-
-## Assets & Licensing
-
-This project purposely contains playful references and is friendly to memes. Important legal notes for the repository:
-
-* **Do not add copyrighted artwork** (e.g. official Shrek, Toothless) without written permission. Using trademarked characters may lead to takedown requests or Play Store rejection.
-* Prefer **original artwork**, **public-domain** assets, or **CC0/CC-BY** resources. When using third-party assets, always include attribution and license text in `ASSETS.md` or the `README`.
-* Place drawable assets under `app/src/main/res/drawable/`. Prefer **vector drawables** (`.xml`) for scalability and small size.
-
-Suggested file names in `res/drawable/`:
-
-* `ic_mascot_goose.xml` — stylized goose mascot (vector)
-* `sticker_goose_party.png` — small PNG sticker (optional)
-
-When publishing, include a short `CREDITS` or `ASSETS` section listing sources and licenses for third-party images or icons.
+* All arithmetic uses integer cents; no floating point rounding errors.
+* Quota remainder is assigned to the first persons in the list (deterministic; preserves total).
+* The algorithm produces a correct settlement set such that after applying all transactions each person's net equals the quota.
+* The algorithm is greedy and produces a correct settlement; it does not attempt to optimize for minimum number of transactions beyond the typical greedy approach.
 
 ---
 
-## Testing
+## Public API (important classes & functions)
 
-* Unit-test the domain logic (`calculateTransactions`) with JUnit: assert balance conservation and correctness for corner cases (2 people, zero values, large sums, remainder distribution).
-* UI tests: Compose UI testing or Espresso for integration flows.
+* `data class Person(val id: Int, val name: String = "", val amountCents: Long = 0L)`
+* `data class Transaction(val fromId: Int, val toId: Int, val amountCents: Long)`
+* `fun calculateTransactions(persons: List<Person>): List<Transaction>` — detailed above.
+* `ExpenseViewModel`:
 
-Example unit test sketch:
+  * `var screen` — one of `Screen.Home | Screen.Input | Screen.Result`
+  * `var numberOfPeople`
+  * `var persons` — list of `Person`
+  * `var transactions` — list of `Transaction`
+  * `fun updateNumberOfPeople(n: Int)`
+  * `fun initPersons()`
+  * `fun updatePersonName(id: Int, name: String)`
+  * `fun updatePersonAmountCents(id: Int, cents: Long)`
+  * `fun calculateAndShowResult()` — computes transactions and navigates to result screen
+  * `fun backToHome()`, `fun backToInput()`
 
-```kotlin
-@Test
-fun calculateTransactions_balancesToZero() {
-  val persons = listOf(Person(0, "A", 10000), Person(1, "B", 0))
-  val tx = calculateTransactions(persons)
-  // validate transactions sum equals difference and final nets are zero
-}
+Utility functions:
+
+* `fun parseAmountInput(input: String): Long` — parses user input like `62.1` or `12,50` into cents (`Long`).
+* `fun centsToDisplay(cents: Long): String` — formats cents into a display string like `12.50 €`.
+* `fun centsToEditable(cents: Long): String` — formats cents into `12.50` for input fields.
+
+---
+
+## Build & run
+
+Prerequisites
+
+* Android Studio (latest stable recommended) with Android SDK and an emulator or device.
+* JDK 11+ (as required by your Android Gradle Plugin / Kotlin setup).
+
+Typical steps
+
+1. Clone the repository:
+
+   ```bash
+   git clone <your-repo-url>
+   cd splitly
+   ```
+2. Open the project in Android Studio (`File -> Open`).
+3. Let Gradle sync, then run the app on an emulator or device via the Run button.
+
+Command-line (Gradle wrapper)
+
+```bash
+# build debug apk
+./gradlew assembleDebug
+
+# install on a connected device
+./gradlew installDebug
 ```
 
----
+(Windows: use `gradlew.bat` instead of `./gradlew`.)
 
-## Contributing
+Notes:
 
-Contributions are welcome. Please follow these guidelines:
-
-1. Fork the repository and create a feature branch.
-2. Keep the code style consistent (Kotlin idiomatic, no unused imports, format with IDE defaults).
-3. Add unit tests for any behavior changes.
-4. Submit a Pull Request describing the change and include screenshots for UI updates.
-
-Consider opening an issue first if the change is non-trivial.
+* If you see errors about Android SDK location, open the project in Android Studio and install the required SDK and build tools.
+* The project uses Jetpack Compose and AndroidX ViewModel; make sure your Android Gradle Plugin and Kotlin plugin in the project are set accordingly.
 
 ---
 
-## Security & Privacy Notes
+## Usage / UX flow
 
-* Splitly runs locally and does not ship any telemetry or analytics by default.
-* If you add cloud sync or backups later, clearly document what is uploaded and ensure users consent.
+1. **Home** — choose number of people (numeric input). Tap **Start split**.
+2. **Input** — enter each person's name and the amount they paid (examples in the UI: `62.1` or `12,50`). Values are parsed to cents internally.
 
----
+   * The UI validates numeric input and parses decimal separators (`.` or `,`).
+   * Tap **Calculate** to compute the result; tap **Back** to return to Home.
+3. **Result** — shows:
 
-## Release / Play Store Checklist
-
-* Ensure targetSdk and compileSdk are up-to-date with Play Store requirements.
-* Provide a privacy policy URL if the app collects or transmits user data.
-* Provide high-quality screenshots and an icon. Ensure you own or have licenses for artwork used.
-* Sign the release AAB with an appropriate key and keep the keystore secure.
-
----
-
-## Troubleshooting
-
-**Common build issues**
-
-* *Unresolved MaterialTheme / Surface*: ensure `implementation("androidx.compose.material3:material3:<version>")` is present and you import `androidx.compose.material3.*`.
-* *Icons unresolved*: add `implementation("androidx.compose.material:material-icons-extended:<version>")` or use `painterResource` with local vector drawables.
-* *Gradle version / BOM mismatches*: prefer the Compose BOM or align versions used in `build.gradle.kts`.
-
-If you run into build errors, run `./gradlew assembleDebug --stacktrace` and inspect the error; often the IDE Quick-Fix will suggest the missing imports.
+   * Total spent and average per person (displayed in euros).
+   * A list of transactions like `Person A ➔ Person B — 12.50 €` describing who should pay whom.
+   * A **Back** button to return to the input screen for adjustments.
 
 ---
 
-## Contact
+## Examples
 
-If you have questions, feature requests or want to collaborate, contact:
+### Example 1 — Simple
 
-* Author: **Luca Turillo** — `turilloluca2005@gmail.com`
+Input:
+
+* Person 1: `62.10` (€62.10)
+* Person 2: `0.00`
+* Person 3: `0.00`
+
+Internal (cents):
+
+* `6210`, `0`, `0` → `total = 6210` cents
+
+Quota:
+
+* `quota = total / 3 = 2070` cents (no remainder)
+
+Balances:
+
+* Person 1: `6210 - 2070 = 4140` (creditor)
+* Person 2: `0 - 2070 = -2070` (debtor)
+* Person 3: `0 - 2070 = -2070` (debtor)
+
+Transactions produced:
+
+* Person 2 → Person 1 : `2070` cents (`20.70 €`)
+* Person 3 → Person 1 : `2070` cents (`20.70 €`)
+
+### Example 2 — Remainder (demonstrating remainder distribution)
+
+Input amounts (euros): `10.00`, `10.00`, `10.01` → cents: `1000`, `1000`, `1001` → `total = 3001`
+
+* `baseQuota = 3001 / 3 = 1000`, `remainder = 1` → the first person (index 0) gets +1 cent quota.
+* quotas = `[1001, 1000, 1000]`
+* balances = `[-1, 0, 1]` → transactions: Person 1 pays 1 cent to Person 3.
+
+---
+
+## Limitations & notes
+
+* Algorithm: greedy approach that produces a correct settlement. It is not guaranteed to minimize the number of transactions in every mathematically possible settlement, but it is efficient and deterministic.
+* Quota remainder assignment is deterministic by index order. If you want different remainder-distribution heuristics (e.g., by name or by who paid), modify quota assignment logic.
+* Currency formatting is EUR in the UI (`€`) — you can adapt `centsToDisplay` for other locales or currency symbols.
+* License implications (see below) affect how others may reuse or modify this code.
+
+---
+
+## Contributing & License Considerations
+
+This repository is licensed under **CARL BY, NC-PA 1.0**  
+*(Commercial Authorization & Restricted License — Attribution required; Non-Commercial with Paid Authorization)*.  
+See [`LICENSE`](LICENSE) for the full terms.
+
+### Key points for contributors and downstream users
+
+- **Modifications & Derivative Works (Non-Commercial Only)**  
+  You **may** modify the project and publicly distribute modified or derivative versions **only** for **non-commercial** purposes.  
+  Any public distribution of modified code must comply with the license conditions:
+  - attribution to the original author,
+  - inclusion of the license notice,
+  - no removal/obscuring of credits.  
+  Standard fork/PR workflows that result in publicly published modified code are allowed **only** if the resulting release is **non-commercial** and meets these requirements.
+
+- **NonCommercial**  
+  You may **not** use the project or any derivatives for commercial purposes unless you have obtained **prior written authorization** from the repository owner **and** agreed on compensation (fees, royalties, or other consideration).  
+  Unauthorized commercial use is prohibited and constitutes copyright infringement.
+
+- **Attribution**  
+  Any permitted sharing (including distribution of modified non-commercial versions) must:
+  - clearly credit the original author, and
+  - include a copy of, or link to, [`LICENSE`](LICENSE).  
+  Original credits and copyright notices must **not** be removed, hidden, or obscured.
+
+Because commercial use and certain sublicensing are restricted under this license, please contact the repository owner if you would like to:
+
+- propose changes,
+- contribute code (contributions should be provided under the project license or otherwise cleared with the owner),
+- obtain permission to create publicly available derivatives for other purposes,
+- request re-licensing, or
+- use the project in a commercial product.
+
+**Contact:** ` Luca Turillo — turilloluca2005@gmail.com`
+
+
+Bug reports and issues are welcome; open an issue describing the problem or requested enhancement. The repository owner can accept patches internally and decide how to integrate or re-release them.
 
 ---
 
 ## License
 
-This project is licensed under the
-[Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nc-nd/4.0/).  
-© Luca Turillo 2025. See the `LICENSE` file for full text.
+This project is distributed under the **Commercial Authorization & Restricted License attribution required non-commercial 1.0** license.
 
----
+**Short summary:** © 2025 Luca Turillo. Licensed under CARL BY, NC-PA 1.0.
+Use and modification allowed for NON-COMMERCIAL purposes only.
+Commercial use permitted only with prior written authorization and agreed compensation.
+See [`LICENSE`](LICENSE) for details.
 
-*Last updated: 2025-08-10*
+Last updated: 2025-08-12
