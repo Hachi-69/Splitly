@@ -8,6 +8,18 @@
 
 package com.example.splitly.ui.screens
 
+import android.content.Context
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
+import android.os.Bundle
+import android.os.CancellationSignal
+import android.os.ParcelFileDescriptor
+import android.print.PageRange
+import android.print.PrintAttributes
+import android.print.PrintDocumentAdapter
+import android.print.PrintDocumentInfo
+import android.print.PrintManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -28,7 +40,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -36,8 +47,12 @@ import androidx.compose.ui.unit.dp
 import com.example.splitly.data.Transaction
 import com.example.splitly.ExpenseViewModel
 import com.example.splitly.R
-import com.example.splitly.ui.utils.centsToDisplay
 import com.example.splitly.ui.theme.BlizzardBlue
+import com.example.splitly.ui.utils.centsToDisplay
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
 
 /**
  * Displays the result screen after calculating expenses.
@@ -78,7 +93,6 @@ fun ResultScreen(vm: ExpenseViewModel) {
                 Text(text = "Splitly", style = MaterialTheme.typography.headlineSmall)
             }
         }
-        // Header: title + total spent
         Text(
             text = "All balanced 🎉",
             style = MaterialTheme.typography.headlineSmall
@@ -86,7 +100,6 @@ fun ResultScreen(vm: ExpenseViewModel) {
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Total spent card / label
         Card(
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             modifier = Modifier.fillMaxWidth(),
@@ -98,12 +111,11 @@ fun ResultScreen(vm: ExpenseViewModel) {
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "Total spent", color = Color.Black, style = MaterialTheme.typography.titleMedium)
-                Text(text = centsToDisplay(totalCents), color = Color.Black, style = MaterialTheme.typography.titleMedium)
+                Text(text = "Total spent", color = androidx.compose.ui.graphics.Color.Black, style = MaterialTheme.typography.titleMedium)
+                Text(text = centsToDisplay(totalCents), color = androidx.compose.ui.graphics.Color.Black, style = MaterialTheme.typography.titleMedium)
             }
         }
 
-        // Average spent per person card / label
         Card(
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             modifier = Modifier.fillMaxWidth(),
@@ -113,12 +125,11 @@ fun ResultScreen(vm: ExpenseViewModel) {
                 modifier = Modifier.padding(12.dp).fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "Average per person", color = Color.Black, style = MaterialTheme.typography.titleMedium)
-                Text(text = centsToDisplay(totalCents / numPersons), color = Color.Black, style = MaterialTheme.typography.titleMedium)
+                Text(text = "Average per person", color = androidx.compose.ui.graphics.Color.Black, style = MaterialTheme.typography.titleMedium)
+                Text(text = centsToDisplay(totalCents / numPersons), color = androidx.compose.ui.graphics.Color.Black, style = MaterialTheme.typography.titleMedium)
             }
         }
 
-        // Transactions list
         LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
             items(vm.transactions) { t ->
                 TransactionCard(t, vm)
@@ -126,14 +137,14 @@ fun ResultScreen(vm: ExpenseViewModel) {
         }
 
         Row(
-            horizontalArrangement = Arrangement.SpaceBetween, // Changed to SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
             Button(onClick = { vm.backToInput() }) {
                 Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Back to input")
-                Text("Back")
+                Text(" Back")
             }
-            Button(onClick = { vm.printToPdf(context) }) {
+            Button(onClick = { printTransactionsToPdf(context, vm.transactions, vm) }) {
                 Icon(imageVector = Icons.Default.Print, contentDescription = "Print to PDF")
                 Text(" Print PDF")
             }
@@ -141,12 +152,241 @@ fun ResultScreen(vm: ExpenseViewModel) {
     }
 }
 
+
 /**
- * Composable function to display a single transaction as a card.
- * It shows who pays whom and the amount of the transaction.
+ * Initiates the printing process for the list of transactions.
  *
- * @param t The [Transaction] object to display.
- * @param vm The [ExpenseViewModel] used to fetch person details.
+ * This function uses the Android PrintManager to create a print job.
+ * It utilizes a [TransactionsPrintDocumentAdapter] to format the transaction data
+ * for printing.
+ *
+ * @param context The current [Context].
+ * @param transactions The list of [Transaction] objects to be printed.
+ * @param vm The [ExpenseViewModel] containing relevant data for printing, such as person names.
+ */
+private fun printTransactionsToPdf(context: Context, transactions: List<Transaction>, vm: ExpenseViewModel) {
+    val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
+    val jobName = "${context.getString(R.string.app_name)} Transactions"
+
+    printManager.print(jobName, TransactionsPrintDocumentAdapter(context, transactions, vm), null)
+}
+/**
+ * A [PrintDocumentAdapter] for generating a PDF document of transactions.
+ *
+ * This adapter handles the layout and writing of transaction data onto a PDF page.
+ * It formats the transactions into a readable summary, including sender, receiver, and amount.
+ * The PDF also includes a title, date/time stamp, and page numbers.
+ *
+ * @property context The application context.
+ * @property transactions The list of [Transaction] objects to be printed.
+ * @property vm The [ExpenseViewModel] providing access to person data.
+ */
+private class TransactionsPrintDocumentAdapter(
+    private val context: Context,
+    private val transactions: List<Transaction>,
+    private val vm: ExpenseViewModel
+) : PrintDocumentAdapter() {
+
+    private var pageHeight: Int = 0
+    private var pageWidth: Int = 0
+    private var myPdfDocument: PdfDocument? = null
+    private var totalPages: Int = 1
+
+    /**
+     * Called when the layout of the document changes.
+     *
+     * This method is responsible for:
+     * - Initializing a new [PdfDocument].
+     * - Calculating the page height and width based on the new print attributes.
+     * - Checking for cancellation signals and invoking the cancellation callback if needed.
+     * - Setting the total number of pages (currently fixed at 1).
+     * - Creating a [PrintDocumentInfo] object with document metadata (name, content type, page count).
+     * - Invoking the layout finished callback with the document info.
+     *
+     * @param oldAttributes The previous print attributes.
+     * @param newAttributes The new print attributes.
+     * @param cancellationSignal A signal to detect cancellation requests.
+     * @param callback A callback to report the layout result.
+     * @param extras Additional options.
+     */
+    override fun onLayout(
+        oldAttributes: PrintAttributes?,
+        newAttributes: PrintAttributes,
+        cancellationSignal: CancellationSignal?,
+        callback: LayoutResultCallback?,
+        extras: Bundle?
+    ) {
+        myPdfDocument = PdfDocument()
+
+        pageHeight = newAttributes.mediaSize!!.heightMils * 72 / 1000
+        pageWidth = newAttributes.mediaSize!!.widthMils * 72 / 1000
+
+        if (cancellationSignal?.isCanceled == true) {
+            callback?.onLayoutCancelled()
+            return
+        }
+
+        totalPages = 1
+
+        val info = PrintDocumentInfo.Builder("splitly_transactions.pdf")
+            .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
+            .setPageCount(totalPages)
+            .build()
+        callback?.onLayoutFinished(info, true)
+    }
+
+    /**
+     * Called when the system needs to write the PDF content.
+     *
+     * This method iterates through the pages requested by the system and draws the content
+     * for each page. It handles cancellation requests and reports success or failure
+     * to the system via the `WriteResultCallback`.
+     *
+     * @param pages An array of [PageRange] objects specifying which pages to write.
+     * @param destination The [ParcelFileDescriptor] where the PDF content should be written.
+     * @param cancellationSignal A [CancellationSignal] to monitor for cancellation requests.
+     * @param callback A [WriteResultCallback] to report the outcome of the write operation.
+     */
+    override fun onWrite(
+        pages: Array<out PageRange>?,
+        destination: ParcelFileDescriptor?,
+        cancellationSignal: CancellationSignal?,
+        callback: WriteResultCallback?
+    ) {
+        for (i in 0 until totalPages) {
+            if (pageInRange(pages, i)) {
+                val newPage = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, i).create()
+                val page = myPdfDocument?.startPage(newPage)
+
+                if (cancellationSignal?.isCanceled == true) {
+                    callback?.onWriteCancelled()
+                    myPdfDocument?.close()
+                    myPdfDocument = null
+                    return
+                }
+                drawPage(page, i)
+                myPdfDocument?.finishPage(page)
+            }
+        }
+
+        try {
+            myPdfDocument?.writeTo(FileOutputStream(destination!!.fileDescriptor))
+        } catch (e: IOException) {
+            callback?.onWriteFailed(e.toString())
+            return
+        } finally {
+            myPdfDocument?.close()
+            myPdfDocument = null
+        }
+        callback?.onWriteFinished(pages)
+    }
+
+    /**
+     * Checks if a given page number falls within any of the specified page ranges.
+     *
+     * This function is used to determine if a particular page should be included
+     * when printing a document.
+     *
+     * @param pageRanges An array of [PageRange] objects. If null, all pages are considered in range.
+     * @param page The page number to check (0-indexed).
+     * @return `true` if the page is within any of the specified ranges or if `pageRanges` is null,
+     *         `false` otherwise.
+     */
+    private fun pageInRange(pageRanges: Array<out PageRange>?, page: Int): Boolean {
+        if (pageRanges == null) return true
+        for (range in pageRanges) {
+            if (page >= range.start && page <= range.end) return true
+        }
+        return false
+    }
+
+    /**
+     * Draws the content of a single page in the PDF document.
+     *
+     * This function is responsible for rendering the transaction summary onto a given PDF page canvas.
+     * It includes:
+     * - A title "Splitly - Transaction Summary".
+     * - The current date and time.
+     * - Headers for "From", "To", and "Amount".
+     * - A list of transactions, displaying the sender, receiver, and amount for each.
+     *   - If a person's name is not set, it defaults to "Person X" where X is their ID + 1.
+     *   - Transactions are added until the page is full (considering a bottom margin).
+     * - A page number in the footer.
+     *
+     * @param page The [PdfDocument.Page] object representing the page to draw on. If null, the function returns.
+     * @param pagenumber The current page number (0-indexed).
+     */
+    private fun drawPage(page: PdfDocument.Page?, pagenumber: Int) {
+        val canvas = page?.canvas ?: return
+
+        var yPosition = 80
+
+        val titlePaint = Paint().apply {
+            color = Color.BLACK
+            textSize = 20f
+            isFakeBoldText = true
+        }
+        canvas.drawText("Splitly - Transaction Summary", 40f, yPosition.toFloat(), titlePaint)
+        yPosition += 40
+
+        // Add date and time to the PDF
+        val dateTimePaint = Paint().apply { color = Color.GRAY; textSize = 10f }
+        val currentDateTime = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault()).format(Date())
+        canvas.drawText(currentDateTime, pageWidth - 150f, yPosition - 20f, dateTimePaint) // Adjust position as needed
+
+        val headerPaint = Paint().apply {
+            color = Color.DKGRAY
+            textSize = 14f
+            isFakeBoldText = true
+        }
+        canvas.drawText("From", 40f, yPosition.toFloat(), headerPaint)
+        canvas.drawText("To", 200f, yPosition.toFloat(), headerPaint)
+        canvas.drawText("Amount", pageWidth - 150f, yPosition.toFloat(), headerPaint) // Allinea a destra
+        yPosition += 25
+        canvas.drawLine(40f, yPosition.toFloat(), pageWidth - 40f, yPosition.toFloat(), Paint().apply { color = Color.GRAY }) // Linea separatrice
+        yPosition += 20
+
+        val textPaint = Paint().apply {
+            color = Color.BLACK
+            textSize = 12f
+        }
+        transactions.forEach { transaction ->
+            if (yPosition > pageHeight - 60) {
+                return@forEach
+            }
+            val fromPerson = vm.persons.find { it.id == transaction.fromId }
+            val fromName = fromPerson?.name?.takeIf { it.isNotBlank() } ?: "Person ${transaction.fromId + 1}"
+
+            val toPerson = vm.persons.find { it.id == transaction.toId }
+            val toName = toPerson?.name?.takeIf { it.isNotBlank() } ?: "Person ${transaction.toId + 1}"
+
+            canvas.drawText(fromName, 40f, yPosition.toFloat(), textPaint)
+            canvas.drawText(toName, 200f, yPosition.toFloat(), textPaint)
+            canvas.drawText(centsToDisplay(transaction.amountCents), pageWidth - 150f, yPosition.toFloat(), textPaint)
+            yPosition += 20
+        }
+
+        val footerPaint = Paint().apply {
+            color = Color.LTGRAY
+            textSize = 10f
+        }
+        canvas.drawText("Page ${pagenumber + 1}", (pageWidth / 2).toFloat() - 20, pageHeight - 30f, footerPaint)
+    }
+}
+
+
+/**
+ * Displays a single transaction in a card format.
+ *
+ * This card shows:
+ * - The name of the person who owes money.
+ * - The name of the person who is owed money.
+ * - The amount of the transaction.
+ *
+ * If a person's name is blank, it defaults to "Person {id + 1}".
+ *
+ * @param t The [Transaction] to display.
+ * @param vm The [ExpenseViewModel] containing the person data.
  */
 @Composable
 fun TransactionCard(t: Transaction, vm: ExpenseViewModel) {
@@ -163,9 +403,9 @@ fun TransactionCard(t: Transaction, vm: ExpenseViewModel) {
         modifier = Modifier.padding(vertical = 6.dp),
         colors = CardDefaults.cardColors(containerColor = BlizzardBlue)
     ) {
-        Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(text = "$fromPersonName  ➔  $toPersonName  ", color = Color.Black, style = MaterialTheme.typography.bodyLarge)
-            Text(text = centsToDisplay(t.amountCents), style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+        Row(modifier = Modifier.padding(12.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(text = "$fromPersonName  ➔  $toPersonName", color = androidx.compose.ui.graphics.Color.Black, style = MaterialTheme.typography.bodyLarge)
+            Text(text = centsToDisplay(t.amountCents), style = MaterialTheme.typography.bodyLarge, color = androidx.compose.ui.graphics.Color.Black)
         }
     }
 }

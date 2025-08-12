@@ -8,14 +8,9 @@
 
 package com.example.splitly
 
-import android.content.Context
-import android.graphics.pdf.PdfDocument
-import android.os.Environment
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import com.example.splitly.data.Person
 import com.example.splitly.data.Transaction
@@ -133,61 +128,5 @@ class ExpenseViewModel : ViewModel() {
      */
     fun backToInput() {
         screen = Screen.Input
-    }
-
-    /**
-     * Generates a PDF document summarizing the transactions and saves it to the device's
-     * downloads directory.
-     * This function will be called when the "Print PDF" button is clicked.
-     * @param context The application context, needed for accessing storage.
-     */
-    fun printToPdf(context: Context) {
-        val pdfDocument = PdfDocument()
-        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
-        val page = pdfDocument.startPage(pageInfo)
-        val canvas = page.canvas
-        val paint = android.graphics.Paint()
-
-        var yPosition = 40f
-        paint.textSize = 16f
-        canvas.drawText("Splitly - Transaction Summary", 40f, yPosition, paint)
-        yPosition += 30f
-
-        paint.textSize = 12f
-        persons.forEach { person ->
-            canvas.drawText("${person.name} paid: ${"%.2f".format(person.amountCents / 100.0)}", 40f, yPosition, paint)
-            yPosition += 20f
-        }
-
-        yPosition += 20f
-        canvas.drawText("Transactions:", 40f, yPosition, paint)
-        yPosition += 20f
-
-        transactions.forEach { transaction ->
-            val fromPersonName = persons.find { it.id == transaction.fromId }?.name ?: "Unknown"
-            val toPersonName = persons.find { it.id == transaction.toId }?.name ?: "Unknown"
-            canvas.drawText("$fromPersonName pays $toPersonName: ${"%.2f".format(transaction.amountCents / 100.0)}", 40f, yPosition, paint)
-            yPosition += 20f
-        }
-
-        pdfDocument.finishPage(page)
-
-        val downloadsDir = ContextCompat.getExternalFilesDirs(context, Environment.DIRECTORY_DOWNLOADS).firstOrNull()
-        if (downloadsDir == null) {
-            Log.e("PdfGeneration", "Downloads directory not found")
-            pdfDocument.close()
-            return
-        }
-
-        val filePath = downloadsDir.absolutePath + "/Splitly_Summary.pdf"
-        val file = java.io.File(filePath)
-        try {
-            pdfDocument.writeTo(java.io.FileOutputStream(file))
-            Log.d("PdfGeneration", "PDF saved to $filePath")
-        } catch (e: java.io.IOException) {
-            e.printStackTrace()
-            Log.e("PdfGeneration", "Error writing PDF: ${e.message}")
-        }
-        pdfDocument.close()
     }
 }
