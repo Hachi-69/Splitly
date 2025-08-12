@@ -459,7 +459,7 @@ private class TransactionsPrintDocumentAdapter(
             color = Color.GRAY
             textSize = 10f
         }
-        val copyrightText = "© 2025 Luca Turillo — Splitly"
+        val copyrightText = "© 2025 Luca Turillo - Splitly"
         canvas.drawText(copyrightText, 40f, pageHeight - 30f, footerPaint)
 
         val pageNumText = "Page ${pagenumber + 1}"
