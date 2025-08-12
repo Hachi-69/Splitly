@@ -149,6 +149,14 @@ fun ResultScreen(vm: ExpenseViewModel) {
                 Text(" Print PDF")
             }
         }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = "© 2025 Luca Turillo — Splitly",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 5.dp)
+            )
+        }
     }
 }
 
@@ -366,11 +374,13 @@ private class TransactionsPrintDocumentAdapter(
             yPosition += 20
         }
 
+        // Add footer with copyright
         val footerPaint = Paint().apply {
-            color = Color.LTGRAY
+            color = Color.GRAY
             textSize = 10f
         }
-        canvas.drawText("Page ${pagenumber + 1}", (pageWidth / 2).toFloat() - 20, pageHeight - 30f, footerPaint)
+        canvas.drawText("© 2025 Luca Turillo — Splitly", 40f, pageHeight - 30f, footerPaint)
+        canvas.drawText("Page ${pagenumber + 1}", pageWidth - 80f, pageHeight - 30f, footerPaint)
     }
 }
 

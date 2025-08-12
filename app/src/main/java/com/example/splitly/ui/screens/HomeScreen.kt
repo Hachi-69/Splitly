@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
@@ -34,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -55,48 +57,60 @@ import com.example.splitly.R
 @Composable
 fun HomeScreen(vm: ExpenseViewModel) {
     val temp = remember { mutableStateOf("3") }
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Spacer(modifier = Modifier.size(5.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Surface(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo4),
+                            contentDescription = "money",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    Column {
+                        Text(text = "Splitly", style = MaterialTheme.typography.headlineSmall)
+                    }
+                }
+                Spacer(modifier = Modifier.size(10.dp))
+                Card(elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
+                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(text = "How many people?")
+                        OutlinedTextField(
+                            value = temp.value,
+                            onValueChange = { new -> temp.value = new.filter { it.isDigit() } },
+                            label = { Text("Number of people") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
 
-    Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Spacer(modifier = Modifier.size(5.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Surface(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo4),
-                    contentDescription = "money",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-            Column {
-                Text(text = "Splitly", style = MaterialTheme.typography.headlineSmall)
-            }
-        }
-        Spacer(modifier = Modifier.size(10.dp))
-        Card(elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(text = "How many people?")
-                OutlinedTextField(
-                    value = temp.value,
-                    onValueChange = { new -> temp.value = new.filter { it.isDigit() } },
-                    label = { Text("Number of people") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-
-                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                    Button(onClick = {
-                        val n = temp.value.toIntOrNull() ?: 0
-                        if (n >= 1) {
-                            vm.updateNumberOfPeople(n)
-                            vm.initPersons()
+                        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                            Button(onClick = {
+                                val n = temp.value.toIntOrNull() ?: 0
+                                if (n >= 1) {
+                                    vm.updateNumberOfPeople(n)
+                                    vm.initPersons()
+                                }
+                            }) {
+                                Text(text = " Start split ")
+                                Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "start")
+                            }
                         }
-                    }) {
-                        Text(text = " Start split ")
-                        Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "start")
                     }
                 }
             }
+            Text("© 2025 Luca Turillo - Splitly",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = Color.Gray)
         }
     }
 }

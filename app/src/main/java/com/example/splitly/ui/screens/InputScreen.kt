@@ -63,44 +63,62 @@ import com.example.splitly.ui.theme.BlizzardBlue
  */
 @Composable
 fun InputScreen(vm: ExpenseViewModel) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Spacer(modifier = Modifier.size(20.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Surface(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo4),
-                    contentDescription = "money",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)) {
+            Spacer(modifier = Modifier.size(20.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Surface(modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logo4),
+                        contentDescription = "money",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                Column {
+                    Text(text = "Splitly", style = MaterialTheme.typography.headlineSmall)
+                }
             }
-            Column {
-                Text(text = "Splitly", style = MaterialTheme.typography.headlineSmall)
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Enter names and amounts (es. 62.1)", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = "Enter names and amounts (es. 62.1)", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
 
-        LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-            items(vm.persons) { person ->
-                PersonRow(person = person, onNameChange = { vm.updatePersonName(person.id, it) }, onAmountChange = { cents -> vm.updatePersonAmountCents(person.id, cents) })
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(vm.persons) { person ->
+                    PersonRow(person = person, onNameChange = { vm.updatePersonName(person.id, it) }, onAmountChange = { cents -> vm.updatePersonAmountCents(person.id, cents) })
+                }
             }
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(onClick = { vm.backToHome() }) {
-                Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "start")
-                Text("Back")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(onClick = { vm.backToHome() }) {
+                    Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "start")
+                    Text("Back")
+                }
+                Button(onClick = { vm.calculateAndShowResult() }, modifier = Modifier.padding(start = 12.dp)) {
+                    Text("Calculate ")
+                    Icon(imageVector = Icons.Default.Calculate, contentDescription = "Calculate", modifier = Modifier.padding(end = 4.dp))
+                }
             }
-            Button(onClick = { vm.calculateAndShowResult() }, modifier = Modifier.padding(start = 12.dp)) {
-                Text("Calculate ")
-                Icon(imageVector = Icons.Default.Calculate, contentDescription = "Calculate", modifier = Modifier.padding(end = 4.dp))
-            }
+            Spacer(modifier = Modifier.height(24.dp)) // Space for footer
         }
+        Text(
+            text = "© 2025 Luca Turillo - Splitly",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 20.dp)
+        )
     }
 }
 
