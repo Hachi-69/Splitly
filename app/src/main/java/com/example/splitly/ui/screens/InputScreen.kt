@@ -102,7 +102,7 @@ fun InputScreen(vm: ExpenseViewModel) {
             ) {
                 Button(onClick = { vm.backToHome() }) {
                     Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "start")
-                    Text("Back")
+                    Text("")
                 }
                 Button(onClick = { vm.calculateAndShowResult() }, modifier = Modifier.padding(start = 12.dp)) {
                     Text("Calculate ")
