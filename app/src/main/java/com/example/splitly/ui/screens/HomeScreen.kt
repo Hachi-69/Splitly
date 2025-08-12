@@ -1,3 +1,11 @@
+/**
+ * © 2025 Luca Turillo — Splitly
+ * Licensed under CARL BY, NC-PA 1.0
+ * Use and modification allowed ONLY for NON-COMMERCIAL purposes.
+ * Commercial use permitted only with prior written authorization and agreed compensation.
+ * Attribution to the author must be preserved. See LICENSE. Contact: turilloluca2005@gmail.com
+ */
+
 package com.example.splitly.ui.screens
 
 import androidx.compose.foundation.background
@@ -36,6 +44,14 @@ import androidx.compose.material.icons.filled.ChevronRight
 import com.example.splitly.R
 
 
+/**
+ * Composable function for the home screen of the Splitly app.
+ *
+ * This screen allows the user to input the number of people to split expenses with.
+ * It features the app logo, a title, a card for input, and a button to proceed.
+ *
+ * @param vm The [ExpenseViewModel] used to manage and update expense-related data.
+ */
 @Composable
 fun HomeScreen(vm: ExpenseViewModel) {
     val temp = remember { mutableStateOf("3") }
@@ -45,10 +61,10 @@ fun HomeScreen(vm: ExpenseViewModel) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Surface(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
                 Image(
-                    painter = painterResource(id = R.drawable.logo4), // Sostituisci con la tua immagine
+                    painter = painterResource(id = R.drawable.logo4),
                     contentDescription = "money",
-                    contentScale = ContentScale.Crop, // Scala l'immagine per riempire lo spazio
-                    modifier = Modifier.fillMaxSize() // L'immagine riempie la Surface
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             Column {

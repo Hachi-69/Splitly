@@ -1,3 +1,11 @@
+/**
+ * © 2025 Luca Turillo — Splitly
+ * Licensed under CARL BY, NC-PA 1.0
+ * Use and modification allowed ONLY for NON-COMMERCIAL purposes.
+ * Commercial use permitted only with prior written authorization and agreed compensation.
+ * Attribution to the author must be preserved. See LICENSE. Contact: turilloluca2005@gmail.com
+ */
+
 package com.example.splitly.domain
 
 import com.example.splitly.data.Person
@@ -6,6 +14,25 @@ import com.example.splitly.data.Transaction
 /**
  * Compute a simple set of transactions that settle debts using a greedy algorithm.
  * All arithmetic uses cents (Long).
+ *
+ * The algorithm works as follows:
+ * 1. Calculate the total amount paid by all persons.
+ * 2. Calculate the base quota for each person (total amount / number of persons).
+ * 3. Distribute any remaining cents to the first few persons in the list (one cent per person).
+ * 4. Calculate the balance for each person (amount paid - quota). A positive balance means the person is owed money,
+ *    while a negative balance means the person owes money.
+ * 5. Create two lists: one for creditors (persons with positive balances) and one for debtors (persons with negative balances).
+ * 6. Sort creditors in descending order of their balance and debtors in ascending order of their balance (most negative first).
+ * 7. Iterate through the creditors and debtors, creating transactions to settle the debts.
+ *    In each step, transfer the minimum of the creditor's balance and the absolute value of the debtor's balance.
+ * 8. Update the balances of the creditor and debtor.
+ * 9. If a creditor's balance becomes zero, move to the next creditor.
+ * 10. If a debtor's balance becomes zero, move to the next debtor.
+ * 11. Repeat steps 7-10 until all debts are settled.
+ *
+ * @param persons A list of [Person] objects, each representing a person and the amount they paid.
+ * @return A list of [Transaction] objects representing the transactions required to settle the debts.
+ *         Returns an empty list if the input list of persons is empty.
  */
 fun calculateTransactions(persons: List<Person>): List<Transaction> {
     val n = persons.size

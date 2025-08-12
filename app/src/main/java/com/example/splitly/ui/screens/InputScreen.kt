@@ -1,3 +1,11 @@
+/**
+ * © 2025 Luca Turillo — Splitly
+ * Licensed under CARL BY, NC-PA 1.0
+ * Use and modification allowed ONLY for NON-COMMERCIAL purposes.
+ * Commercial use permitted only with prior written authorization and agreed compensation.
+ * Attribution to the author must be preserved. See LICENSE. Contact: turilloluca2005@gmail.com
+ */
+
 package com.example.splitly.ui.screens
 
 import androidx.compose.foundation.Image
@@ -46,6 +54,13 @@ import com.example.splitly.R
 import com.example.splitly.ui.theme.BlizzardBlue
 
 
+/**
+ * Composable function that represents the input screen of the application.
+ * This screen allows users to enter names and amounts for each person involved in an expense.
+ * It displays a list of input fields for each person and provides buttons to navigate back or calculate the results.
+ *
+ * @param vm The [ExpenseViewModel] that holds the state and logic for this screen.
+ */
 @Composable
 fun InputScreen(vm: ExpenseViewModel) {
     Column(modifier = Modifier.padding(16.dp)) {
@@ -53,17 +68,17 @@ fun InputScreen(vm: ExpenseViewModel) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Surface(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
                 Image(
-                    painter = painterResource(id = R.drawable.logo4), // Sostituisci con la tua immagine
+                    painter = painterResource(id = R.drawable.logo4),
                     contentDescription = "money",
-                    contentScale = ContentScale.Crop, // Scala l'immagine per riempire lo spazio
-                    modifier = Modifier.fillMaxSize() // L'immagine riempie la Surface
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             Column {
                 Text(text = "Splitly", style = MaterialTheme.typography.headlineSmall)
             }
         }
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp)) // Added Spacer for vertical space
+        Spacer(modifier = Modifier.height(16.dp))
         Text(text = "Enter names and amounts (es. 62.1)", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
 
         LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
@@ -75,7 +90,7 @@ fun InputScreen(vm: ExpenseViewModel) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween // Modificato per allineare il bottone "Back" a sinistra
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(onClick = { vm.backToHome() }) {
                 Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "start")

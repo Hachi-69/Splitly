@@ -1,3 +1,11 @@
+/**
+ * © 2025 Luca Turillo — Splitly
+ * Licensed under CARL BY, NC-PA 1.0
+ * Use and modification allowed ONLY for NON-COMMERCIAL purposes.
+ * Commercial use permitted only with prior written authorization and agreed compensation.
+ * Attribution to the author must be preserved. See LICENSE. Contact: turilloluca2005@gmail.com
+ */
+
 package com.example.splitly.ui.screens
 
 import androidx.compose.foundation.Image
@@ -8,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Print
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.splitly.data.Transaction
@@ -29,8 +39,23 @@ import com.example.splitly.R
 import com.example.splitly.ui.utils.centsToDisplay
 import com.example.splitly.ui.theme.BlizzardBlue
 
+/**
+ * Displays the result screen after calculating expenses.
+ *
+ * This screen shows:
+ * - A header with the app logo and title.
+ * - A "All balanced" message.
+ * - A card displaying the total amount spent.
+ * - A card displaying the average amount spent per person.
+ * - A list of transactions required to balance the expenses.
+ * - A "Back" button to return to the input screen.
+ * - A "Print to PDF" button to generate a PDF of the transactions.
+ *
+ * @param vm The [ExpenseViewModel] containing the data and logic for the screen.
+ */
 @Composable
 fun ResultScreen(vm: ExpenseViewModel) {
+    val context = LocalContext.current
     // total in cents
     val totalCents = vm.persons.sumOf { it.amountCents }
     val numPersons = vm.persons.size
@@ -43,10 +68,10 @@ fun ResultScreen(vm: ExpenseViewModel) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Surface(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
                 Image(
-                    painter = painterResource(id = R.drawable.logo4), // Sostituisci con la tua immagine
+                    painter = painterResource(id = R.drawable.logo4),
                     contentDescription = "money",
-                    contentScale = ContentScale.Crop, // Scala l'immagine per riempire lo spazio
-                    modifier = Modifier.fillMaxSize() // L'immagine riempie la Surface
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             Column {
@@ -100,15 +125,29 @@ fun ResultScreen(vm: ExpenseViewModel) {
             }
         }
 
-        Row(horizontalArrangement = Arrangement.Start, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween, // Changed to SpaceBetween
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Button(onClick = { vm.backToInput() }) {
-                Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "start")
+                Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Back to input")
                 Text("Back")
+            }
+            Button(onClick = { vm.printToPdf(context) }) {
+                Icon(imageVector = Icons.Default.Print, contentDescription = "Print to PDF")
+                Text(" Print PDF")
             }
         }
     }
 }
 
+/**
+ * Composable function to display a single transaction as a card.
+ * It shows who pays whom and the amount of the transaction.
+ *
+ * @param t The [Transaction] object to display.
+ * @param vm The [ExpenseViewModel] used to fetch person details.
+ */
 @Composable
 fun TransactionCard(t: Transaction, vm: ExpenseViewModel) {
     val fromPerson = vm.persons.find { it.id == t.fromId }

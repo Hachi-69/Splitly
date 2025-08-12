@@ -1,3 +1,11 @@
+/**
+ * © 2025 Luca Turillo — Splitly
+ * Licensed under CARL BY, NC-PA 1.0
+ * Use and modification allowed ONLY for NON-COMMERCIAL purposes.
+ * Commercial use permitted only with prior written authorization and agreed compensation.
+ * Attribution to the author must be preserved. See LICENSE. Contact: turilloluca2005@gmail.com
+ */
+
 package com.example.splitly.ui
 
 import androidx.compose.animation.*
@@ -9,13 +17,19 @@ import com.example.splitly.ui.screens.HomeScreen
 import com.example.splitly.ui.screens.InputScreen
 import com.example.splitly.ui.screens.ResultScreen
 
+/**
+ * The main composable function for the ExpenseApp.
+ * It uses AnimatedContent to handle transitions between different screens (Home, Input, Result).
+ * The animation direction (slide in/out from left/right) is determined by the navigation flow.
+ *
+ * @param vm The [ExpenseViewModel] that holds the application's state and logic.
+ */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ExpenseApp(vm: ExpenseViewModel) {
     AnimatedContent(
         targetState = vm.screen,
         transitionSpec = {
-            // Determina la direzione dell'animazione in base alla transizione tra schermate
             val goingForward = when {
                 initialState is Screen.Home && targetState is Screen.Input -> true
                 initialState is Screen.Input && targetState is Screen.Result -> true
