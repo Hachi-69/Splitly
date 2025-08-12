@@ -152,7 +152,7 @@ Typical steps
 1. Clone the repository:
 
    ```bash
-   git clone <your-repo-url>
+   gh repo clone Hachi-69/Splitly
    cd splitly
    ```
 2. Open the project in Android Studio (`File -> Open`).
