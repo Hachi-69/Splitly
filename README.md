@@ -285,9 +285,9 @@ Bug reports and issues are welcome; open an issue describing the problem or requ
 
 This project is distributed under the **Commercial Authorization & Restricted License attribution required non-commercial 1.0** license.
 
-**Short summary:** © 2025 Luca Turillo. Licensed under CARL BY, NC-PA 1.0.
+**Short summary:** © 2026 Luca Turillo. Licensed under CARL BY, NC-PA 1.0.
 Use and modification allowed for NON-COMMERCIAL purposes only.
 Commercial use permitted only with prior written authorization and agreed compensation.
 See [`LICENSE`](LICENSE) for details.
 
-Last updated: 2025-08-12
+Last updated: 2026-03-19
